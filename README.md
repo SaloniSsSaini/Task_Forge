@@ -1,6 +1,6 @@
 # TaskForge Enterprise
 
-**A full-stack, portfolio-grade team task management SaaS foundation** built as an **npm monorepo**: a **Next.js 15** (App Router) client and an **Express 4** API with **Prisma ORM**, **JWT authentication**, **REST + WebSocket (Socket.IO)** collaboration, and a **SQLite** database for frictionless local development with a documented path to **PostgreSQL** in production. A **[live deployment on Render](#live-demo)** exposes the same architecture publicly (split frontend + API origins, HTTPS, CORS, and Socket.IO).
+**A full-stack, portfolio-grade team task management SaaS foundation** built as an **npm monorepo**: a **Next.js 15** (App Router) client and an **Express 4** API with **Prisma ORM**, **JWT authentication**, **REST + WebSocket (Socket.IO)** collaboration, and a **SQLite** database for frictionless local development with a documented path to **PostgreSQL** in production. A **[live demo](#live-demo)** on **Vercel** (frontend) and **Render** (API) exposes the same architecture publicly (split origins, HTTPS, CORS, and Socket.IO).
 
 This document is written to serve both **recruiters** and **engineers**: it explains *what* was built, *why* key choices were made, and *how* to install, run, extend, and deploy the system.
 
@@ -8,23 +8,37 @@ This document is written to serve both **recruiters** and **engineers**: it expl
 
 ## Live Demo
 
-The production instance for this repository is hosted on **[Render](https://render.com)** as **two services**: the **Next.js 15** frontend (`web/`) and the **Express + Prisma + Socket.IO** API (`api/`). That split matches the monorepo layout: the browser loads the UI from the frontend origin, then calls the API origin for **REST** (JSON + JWT) and **WebSockets** (Socket.IO on `/socket.io/`). The API must allow the frontend origin via **`WEB_ORIGIN`** (CORS); the frontend build must set **`NEXT_PUBLIC_API_URL`** to the public API base URL (no trailing slash).
+The production stack uses **[Vercel](https://vercel.com)** for the **Next.js 15** frontend (`web/`) and **[Render](https://render.com)** for the **Express + Prisma + Socket.IO** API (`api/`). The browser loads the UI from the frontend origin, then calls the API for **REST** (JSON + JWT) and **WebSockets** (Socket.IO on `/socket.io/`). Set **`WEB_ORIGIN`** on the API to the Vercel origin (CORS) and **`NEXT_PUBLIC_API_URL`** on the web build to the public API base URL (no trailing slash). Details: [§11 Environment variables](#11-environment-variables).
 
-### Frontend
+### Frontend (Vercel)
 
-**URL:** [https://taskforge-frontend-33yz.onrender.com](https://taskforge-frontend-33yz.onrender.com)
+**URL:** [https://task-forge-web-lwqx.vercel.app](https://task-forge-web-lwqx.vercel.app)
 
 Hosts the full **App Router** experience: landing, **register / login**, demo shortcuts, and the **dashboard** (overview, Kanban with **@dnd-kit**, calendar, **Recharts** analytics, notifications, realtime **chat** client, settings).
 
-### Backend API
+### Backend API (Render)
 
-**URL:** [https://taskforge-enterprisess.onrender.com](https://taskforge-enterprisess.onrender.com)
+**URL:** [https://task-forge-jlpv.onrender.com](https://task-forge-jlpv.onrender.com)
 
 Hosts **Express** routes (`/health`, `/auth`, `/projects`, `/tasks`, `/notifications`, `/analytics`, `/users`, …), **Zod**-validated inputs, **Prisma** persistence, and **Socket.IO** attached to the same HTTP server as the REST app.
 
-**Smoke test:** [GET /health](https://taskforge-enterprisess.onrender.com/health) should return JSON liveness.
+### Health Check
 
-**Demo login:** after the API’s database has been migrated and **seeded** on Render, use the accounts in [§15 Demo data and credentials](#15-demo-data-and-credentials). One-click demo entry points for production are listed there alongside localhost.
+[https://task-forge-jlpv.onrender.com/health](https://task-forge-jlpv.onrender.com/health) — should return JSON liveness.
+
+### Demo Login
+
+**Admin**
+
+- Email: `admin@demo.com`
+- Password: `Admin123`
+
+**Member**
+
+- Email: `member@demo.com`
+- Password: `Member123`
+
+After the API database is **migrated and seeded** on Render, these accounts work in production. One-click demo URLs are in [§15 Demo data and credentials](#15-demo-data-and-credentials).
 
 ---
 
@@ -347,7 +361,7 @@ flowchart LR
 | `JWT_ACCESS_EXPIRES` | No | Default `15m` |
 | `JWT_REFRESH_EXPIRES` | No | Default `7d` |
 
-**Live API (Render):** Point `WEB_ORIGIN` at the exact frontend origin from [Live Demo](#live-demo)—for example `https://taskforge-frontend-33yz.onrender.com`—so **CORS** and **Socket.IO** from that site succeed.
+**Live API (Render):** Point `WEB_ORIGIN` at the exact frontend origin from [Live Demo](#live-demo)—for example `https://task-forge-web-lwqx.vercel.app`—so **CORS** and **Socket.IO** from that site succeed.
 
 ### 11.2 Web (`web/.env.local`)
 
@@ -355,7 +369,7 @@ flowchart LR
 |----------|----------|-------------|
 | `NEXT_PUBLIC_API_URL` | No | Defaults to `http://localhost:4000` in `src/lib/config.ts` |
 
-**Live deployment:** The production build in [Live Demo](#live-demo) sets `NEXT_PUBLIC_API_URL` to `https://taskforge-enterprisess.onrender.com` (no trailing slash) so the hosted Next.js app calls the hosted Express API.
+**Live deployment:** The production build in [Live Demo](#live-demo) sets `NEXT_PUBLIC_API_URL` to `https://task-forge-jlpv.onrender.com` (no trailing slash) so the hosted Next.js app calls the hosted Express API.
 
 ---
 
@@ -445,7 +459,7 @@ npm run build -w web
 ## 14. HTTP API reference
 
 **Base URL (local):** `http://localhost:4000`  
-**Base URL (this repository’s Render API):** `https://taskforge-enterprisess.onrender.com`  
+**Base URL (this repository’s Render API):** `https://task-forge-jlpv.onrender.com`  
 
 Append paths from the table below to whichever base you use (no trailing slash on the origin).
 
@@ -483,10 +497,10 @@ The seed script creates **Demo Workspace**, links users, a sample **project** wi
 - http://localhost:3000/login?demo=admin  
 - http://localhost:3000/login?demo=member  
 
-**Quick demo URLs (production — Render frontend):**
+**Quick demo URLs (production — Vercel frontend):**
 
-- https://taskforge-frontend-33yz.onrender.com/login?demo=admin  
-- https://taskforge-frontend-33yz.onrender.com/login?demo=member  
+- https://task-forge-web-lwqx.vercel.app/login?demo=admin  
+- https://task-forge-web-lwqx.vercel.app/login?demo=member  
 
 *(Requires the deployed API database to be seeded with the same demo users.)*
 
@@ -539,12 +553,12 @@ Not implemented (intentional roadmap):
 
 ## 19. Deployment guide
 
-### 19.0 This repository’s live stack (Render)
+### 19.0 This repository’s live stack (Vercel + Render)
 
-The **[Live Demo](#live-demo)** URLs reflect the maintainer’s deployment pattern: **two Render web services** (frontend Next.js build + Node API). In that setup:
+The **[Live Demo](#live-demo)** URLs reflect the maintainer’s deployment pattern: **Vercel** for the Next.js frontend and **Render** for the Node API. In that setup:
 
-- **Frontend service:** build `web/`, set **`NEXT_PUBLIC_API_URL`** to `https://taskforge-enterprisess.onrender.com` (or your own API URL), deploy.  
-- **API service:** build/start `api/` with **`DATABASE_URL`**, **`JWT_ACCESS_SECRET`**, **`JWT_REFRESH_SECRET`**, and **`WEB_ORIGIN`** set to `https://taskforge-frontend-33yz.onrender.com` (exact scheme + host; no path) so CORS and Socket.IO from the browser succeed.  
+- **Frontend (Vercel):** root directory `web/`, set **`NEXT_PUBLIC_API_URL`** to `https://task-forge-jlpv.onrender.com` (or your own API URL), deploy.  
+- **API service (Render):** build/start `api/` with **`DATABASE_URL`**, **`JWT_ACCESS_SECRET`**, **`JWT_REFRESH_SECRET`**, and **`WEB_ORIGIN`** set to `https://task-forge-web-lwqx.vercel.app` (exact scheme + host; no path) so CORS and Socket.IO from the browser succeed.  
 - Run **Prisma** migrations (and optionally **seed**) on the API service so `/health`, auth, and demo users behave as documented.
 
 The subsections below (**PostgreSQL**, **Railway-style API**, **Vercel for Next.js**) remain the general reference for other hosts; the same environment variables and origins apply.
