@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+!**/.env.example
+
+api/prisma/dev.db
+api/prisma/dev.db-journal
+api/dist
+web/.next
+web/out
+*.tsbuildinfo
+.DS_Store
